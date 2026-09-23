@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frank's Merchandise — Catalogue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     MASENO BUSINESS HUB — REUSABLE CATALOGUE TEMPLATE
+     Reusable: CSS variables, layout, components, JS engine.
+     Seller-specific: everything under --- SELLER THEME --- below,
+     plus the seller/products data block in the <script>.
+     ============================================================ */
+
+  :root{
+    /* --- SELLER THEME (Frank's Merchandise — campus streetwear) --- */
+    --paper:#F1EDE3;
+    --ink:#171712;
+    --ink-soft:#5B5748;
+    --line:#DAD3BE;
+    --card-bg:#FFFFFF;
+    --pitch:#204B36;
+    --pitch-dark:#153224;
+    --tag:#D8A125;
+    --whatsapp:#25D366;
+    --whatsapp-dark:#1DA851;
+    --radius:14px;
+    --font-display:'Teko',sans-serif;
+    --font-body:'Work Sans',sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  img{max-width:100%;display:block;}
+  button{font-family:inherit;cursor:pointer;}
+  a{color:inherit;text-decoration:none;}
+
+  /* ---------- Header ---------- */
+  .site-header{
+    position:sticky;top:0;z-index:20;
+    background:var(--paper);
+    border-bottom:1px solid var(--line);
+    padding:14px 16px 0;
+  }
+  .brand{display:flex;align-items:center;gap:10px;padding-bottom:12px;}
+  .grommet{
+    width:30px;height:30px;flex:none;border-radius:50%;
+    background:var(--pitch);
+    box-shadow:inset 0 0 0 5px var(--paper), inset 0 0 0 6px var(--line);
+  }
+  .brand-text h1{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:28px;
+    line-height:0.9;
+    margin:0;
+    letter-spacing:0.3px;
+  }
+  .brand-text p{
+    margin:2px 0 0;
+    font-size:12.5px;
+    color:var(--ink-soft);
+  }
+  .cat-nav{
+    display:flex;gap:8px;overflow-x:auto;
+    padding-bottom:12px;
+    scrollbar-width:none;
+  }
+  .cat-nav::-webkit-scrollbar{display:none;}
+  .cat-pill{
+    flex:none;
+    font-size:14px;font-weight:600;
+    padding:7px 16px;
+    border-radius:999px;
+    background:var(--card-bg);
+    border:1px solid var(--line);
+    white-space:nowrap;
+  }
+  .cat-pill:active{background:var(--pitch);color:#fff;border-color:var(--pitch);}
+
+  /* ---------- Catalogue sections ---------- */
+  main{padding:20px 16px 40px;max-width:1080px;margin:0 auto;}
+  .cat-section{scroll-margin-top:118px;margin-bottom:32px;}
+  .cat-heading{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:26px;
+    letter-spacing:0.3px;
+    margin:0 0 12px;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--line);
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+  }
+  @media(min-width:640px){ .grid{grid-template-columns:repeat(3,1fr);} }
+  @media(min-width:960px){ .grid{grid-template-columns:repeat(4,1fr);} }
+
+  .card{
+    position:relative;
+    background:var(--card-bg);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:0;
+    text-align:left;
+    overflow:hidden;
+    display:flex;flex-direction:column;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .grommet-sm{
+    position:absolute;top:8px;left:8px;z-index:2;
+    width:14px;height:14px;border-radius:50%;
+    background:var(--paper);
+    box-shadow:inset 0 0 0 2px var(--line);
+  }
+  .card img{
+    width:100%;aspect-ratio:1/1;object-fit:cover;
+    background:#e9e5d8;
+  }
+  .card-body{padding:10px 10px 12px;display:flex;flex-direction:column;gap:4px;}
+  .card-name{font-size:14.5px;font-weight:600;line-height:1.2;}
+  .card-price{font-size:13px;color:var(--pitch);font-weight:700;}
+  .card-dots{display:flex;gap:3px;margin-top:2px;}
+  .card-dots i{width:5px;height:5px;border-radius:50%;background:var(--line);display:block;}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;z-index:50;
+    background:rgba(15,14,10,0.55);
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+  }
+  .modal-overlay.open{display:flex;}
+  @media(min-width:720px){ .modal-overlay{align-items:center;} }
+
+  .modal{
+    background:var(--paper);
+    width:100%;max-width:640px;
+    max-height:92vh;
+    border-radius:20px 20px 0 0;
+    overflow-y:auto;
+    position:relative;
+    animation:slideUp 0.25s ease-out;
+  }
+  @media(min-width:720px){ .modal{border-radius:20px;} }
+  @keyframes slideUp{from{transform:translateY(24px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+  .modal-close{
+    position:absolute;top:12px;right:12px;z-index:3;
+    width:34px;height:34px;border-radius:50%;
+    background:var(--card-bg);border:1px solid var(--line);
+    font-size:20px;line-height:1;color:var(--ink);
+  }
+
+  .modal-gallery{position:relative;background:#e9e5d8;}
+  #modalImage{width:100%;aspect-ratio:1/1;object-fit:cover;}
+  .swatches{
+    display:flex;gap:8px;padding:10px 16px;
+    overflow-x:auto;background:var(--card-bg);
+    border-bottom:1px solid var(--line);
+  }
+  .swatch{
+    flex:none;width:44px;height:44px;border-radius:8px;
+    background-size:cover;background-position:center;
+    border:2px solid transparent;padding:0;
+  }
+  .swatch.active{border-color:var(--pitch);}
+
+  .modal-info{padding:16px 18px 24px;}
+  .modal-category{
+    margin:0;font-size:12.5px;font-weight:600;
+    color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.6px;
+  }
+  .modal-info h2{
+    font-family:var(--font-display);font-weight:600;
+    font-size:30px;margin:2px 0 4px;line-height:1;
+  }
+  .modal-price{
+    font-size:19px;font-weight:700;color:var(--pitch);margin:0 0 14px;
+  }
+  .size-picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+  .size-chip{
+    padding:8px 14px;border-radius:8px;
+    border:1px solid var(--line);background:var(--card-bg);
+    font-size:14px;font-weight:600;
+  }
+  .size-chip.active{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+
+  .modal-actions{display:flex;flex-direction:column;gap:10px;}
+  .btn{
+    display:flex;align-items:center;justify-content:center;
+    padding:13px 18px;border-radius:10px;
+    font-size:15px;font-weight:700;border:none;
+  }
+  .btn-whatsapp{background:var(--whatsapp);color:#fff;}
+  .btn-whatsapp:active{background:var(--whatsapp-dark);}
+  .btn-row{display:flex;gap:8px;}
+  .btn-outline{
+    flex:1;background:transparent;
+    border:1px solid var(--line);color:var(--ink);
+    font-size:13.5px;padding:11px 10px;
+  }
+
+  .related{margin-top:24px;padding-top:16px;border-top:1px solid var(--line);}
+  .related-label{
+    font-size:12.5px;font-weight:600;color:var(--ink-soft);
+    text-transform:uppercase;letter-spacing:0.6px;margin:0 0 10px;
+  }
+  .related-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .related-card{
+    background:var(--card-bg);border:1px solid var(--line);
+    border-radius:10px;overflow:hidden;padding:0;text-align:left;
+  }
+  .related-card img{width:100%;aspect-ratio:1/1;object-fit:cover;background:#e9e5d8;}
+  .related-card span{display:block;font-size:11.5px;font-weight:600;padding:6px 8px 8px;}
+
+  /* ---------- Footer ---------- */
+  .site-footer{
+    background:var(--ink);color:var(--paper);
+    padding:26px 16px 30px;text-align:center;
+  }
+  .footer-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .foot-link{
+    padding:9px 16px;border-radius:999px;
+    border:1px solid rgba(241,237,227,0.3);
+    font-size:13.5px;font-weight:600;
+  }
+  .footer-note{margin:0;font-size:12px;color:rgba(241,237,227,0.6);}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="brand">
+    <span class="grommet" aria-hidden="true"></span>
+    <div class="brand-text">
+      <h1 id="brandName">Seller Name</h1>
+      <p id="brandTagline">Tagline</p>
+    </div>
+  </div>
+  <nav class="cat-nav" id="catNav"></nav>
+</header>
+
+<main>
+  <div id="catalogue"></div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-actions">
+    <a class="foot-link" id="footerCall" href="#">Call</a>
+    <a class="foot-link" id="footerInstagram" href="#" target="_blank" rel="noopener">Instagram</a>
+    <a class="foot-link" id="footerWhatsapp" href="#" target="_blank" rel="noopener">WhatsApp</a>
+  </div>
+  <p class="footer-note" id="footerNote"></p>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Product details">
+    <button class="modal-close" id="modalClose" aria-label="Close">×</button>
+    <div class="modal-gallery">
+      <img id="modalImage" src="" alt="">
+      <div class="swatches" id="modalSwatches"></div>
+    </div>
+    <div class="modal-info">
+      <p class="modal-category" id="modalCategory"></p>
+      <h2 id="modalName"></h2>
+      <p class="modal-price" id="modalPrice"></p>
+      <div class="size-picker" id="modalSizes"></div>
+      <div class="modal-actions">
+        <a class="btn btn-whatsapp" id="modalWhatsapp" target="_blank" rel="noopener">Enquire on WhatsApp</a>
+        <div class="btn-row">
+          <a class="btn btn-outline" id="modalCall" href="#">Call</a>
+          <a class="btn btn-outline" id="modalInstagram" href="#" target="_blank" rel="noopener">Instagram</a>
+          <button class="btn btn-outline" id="modalShare" type="button">Share</button>
+        </div>
+      </div>
+      <div class="related">
+        <p class="related-label">You might also like</p>
+        <div class="related-grid" id="relatedGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   SELLER-SPECIFIC DATA — swap this block to reuse the template
+   for another Maseno Business Hub seller.
+   ============================================================ */
+const seller = {
+  name: "Frank's Merchandise",
+  tagline: "Campus fits & kicks, from Maseno to your doorstep",
+  phone: "0740100729",
+  whatsapp: "254740100729",
+  instagram: "francko_ke"
+};
+
+const products = [
+  {
+    id: "football-jerseys",
+    name: "Football Jerseys",
+    category: "Football",
+    price: 500,
+    sizes: ["Medium", "Large", "XL"],
+    active: true,
+    images: [
+      { src: "assets/products/football-jerseys-01.jpg", label: "Sky Blue" },
+      { src: "assets/products/football-jerseys-02.jpg", label: "Red & White" },
+      { src: "assets/products/football-jerseys-03.jpg", label: "Deep Red" },
+      { src: "assets/products/football-jerseys-04.jpg", label: "Red & Black" },
+      { src: "assets/products/football-jerseys-05.jpg", label: "Black & Red Stripe" },
+      { src: "assets/products/football-jerseys-06.jpg", label: "Navy Blue" }
+    ]
+  },
+  {
+    id: "nike-footwear",
+    name: "Nike Footwear",
+    category: "Footwear",
+    price: 2500,
+    sizes: ["37", "38", "39", "40", "41", "42"],
+    active: true,
+    images: [
+      { src: "assets/products/nike-footwear-01.jpg", label: "Black/Grey/Red" },
+      { src: "assets/products/nike-footwear-02.jpg", label: "Black/Grey/Yellow" },
+      { src: "assets/products/nike-footwear-03.jpg", label: "Grey/Yellow" },
+      { src: "assets/products/nike-footwear-04.jpg", label: "Pink/Cream" },
+      { src: "assets/products/nike-footwear-05.jpg", label: "Grey/Brown" },
+      { src: "assets/products/nike-footwear-06.jpg", label: "White/Gold" }
+    ]
+  },
+  {
+    id: "converse-footwear",
+    name: "Converse Footwear",
+    category: "Footwear",
+    price: 1800,
+    sizes: ["37", "38", "39", "40", "41", "42"],
+    active: true,
+    images: [
+      { src: "assets/products/converse-footwear-01.jpg", label: "Pink" },
+      { src: "assets/products/converse-footwear-02.jpg", label: "Brown" },
+      { src: "assets/products/converse-footwear-03.jpg", label: "Grey" },
+      { src: "assets/products/converse-footwear-04.jpg", label: "Black" },
+      { src: "assets/products/converse-footwear-05.jpg", label: "White" }
+    ]
+  },
+  {
+    id: "sandals",
+    name: "Sandals",
+    category: "Footwear",
+    price: 350,
+    sizes: ["37", "38", "39", "40", "41", "42"],
+    active: true,
+    images: [
+      { src: "assets/products/sandals-01.jpg", label: "Red" },
+      { src: "assets/products/sandals-02.jpg", label: "Teal" },
+      { src: "assets/products/sandals-03.jpg", label: "Tan Woven" },
+      { src: "assets/products/sandals-04.jpg", label: "Black" },
+      { src: "assets/products/sandals-05.jpg", label: "Pink Butterfly" },
+      { src: "assets/products/sandals-06.jpg", label: "Beige" }
+    ]
+  },
+  {
+    id: "shirts",
+    name: "Shirts",
+    category: "Apparel",
+    price: 650,
+    sizes: ["Medium", "Large", "XL"],
+    active: true,
+    images: [
+      { src: "assets/products/shirts-01.jpg", label: "Teal" },
+      { src: "assets/products/shirts-02.jpg", label: "Lavender" },
+      { src: "assets/products/shirts-03.jpg", label: "Coral" },
+      { src: "assets/products/shirts-04.jpg", label: "Pink" },
+      { src: "assets/products/shirts-05.jpg", label: "Brown" },
+      { src: "assets/products/shirts-06.jpg", label: "Yellow" }
+    ]
+  },
+  {
+    id: "trousers",
+    name: "Trousers",
+    category: "Apparel",
+    price: 1200,
+    sizes: ["Medium", "Large", "XL"],
+    active: true,
+    images: [
+      { src: "assets/products/trousers-01.jpg", label: "Blue" },
+      { src: "assets/products/trousers-02.jpg", label: "Black" }
+    ]
+  }
+];
+
+/* ============================================================
+   REUSABLE RENDERING & INTERACTION ENGINE
+   Nothing below this line references seller/product content
+   directly except through the `seller` and `products` objects.
+   ============================================================ */
+(function(){
+  "use strict";
+
+  const CATEGORY_ORDER = ["Football", "Footwear", "Apparel"];
+
+  const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const formatPrice = n => "KES " + n.toLocaleString("en-KE");
+  const activeProducts = () => products.filter(p => p.active);
+  const orderedCategories = () => {
+    const present = [...new Set(activeProducts().map(p => p.category))];
+    return CATEGORY_ORDER.filter(c => present.includes(c))
+      .concat(present.filter(c => !CATEGORY_ORDER.includes(c)));
+  };
+
+  let state = { productId: null, imageIndex: 0, size: null };
+
+  function init(){
+    document.getElementById("brandName").textContent = seller.name;
+    document.getElementById("brandTagline").textContent = seller.tagline;
+    document.getElementById("footerCall").href = "tel:" + seller.phone;
+    document.getElementById("footerInstagram").href = "https://instagram.com/" + seller.instagram;
+    document.getElementById("footerInstagram").textContent = "@" + seller.instagram;
+    document.getElementById("footerWhatsapp").href = "https://wa.me/" + seller.whatsapp;
+    document.getElementById("footerNote").textContent = seller.name + " · " + seller.phone;
+    document.getElementById("modalCall").href = "tel:" + seller.phone;
+    document.getElementById("modalInstagram").href = "https://instagram.com/" + seller.instagram;
+
+    buildNav();
+    buildCatalogue();
+    bindEvents();
+  }
+
+  function buildNav(){
+    document.getElementById("catNav").innerHTML = orderedCategories()
+      .map(c => `<a href="#cat-${slug(c)}" class="cat-pill">${c}</a>`).join("");
+  }
+
+  function buildCatalogue(){
+    document.getElementById("catalogue").innerHTML = orderedCategories().map(cat => {
+      const items = activeProducts().filter(p => p.category === cat);
+      return `<section class="cat-section" id="cat-${slug(cat)}">
+        <h2 class="cat-heading">${cat}</h2>
+        <div class="grid">${items.map(cardHTML).join("")}</div>
+      </section>`;
+    }).join("");
+  }
+
+  function cardHTML(p){
+    return `<button class="card" data-id="${p.id}" aria-label="View ${p.name}">
+      <span class="grommet-sm" aria-hidden="true"></span>
+      <img src="${p.images[0].src}" alt="${p.name}" loading="lazy">
+      <span class="card-body">
+        <span class="card-name">${p.name}</span>
+        <span class="card-price">${formatPrice(p.price)}</span>
+        <span class="card-dots">${p.images.map(() => "<i></i>").join("")}</span>
+      </span>
+    </button>`;
+  }
+
+  function openModal(id){
+    state = { productId: id, imageIndex: 0, size: null };
+    renderModal();
+    document.getElementById("modalOverlay").classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeModal(){
+    document.getElementById("modalOverlay").classList.remove("open");
+    document.body.style.overflow = "";
+  }
+
+  function currentProduct(){
+    return products.find(p => p.id === state.productId);
+  }
+
+  function renderModal(){
+    const p = currentProduct();
+    if(!p) return;
+    const img = p.images[state.imageIndex];
+
+    document.getElementById("modalCategory").textContent = p.category;
+    document.getElementById("modalName").textContent = p.name;
+    document.getElementById("modalPrice").textContent = formatPrice(p.price);
+    document.getElementById("modalImage").src = img.src;
+    document.getElementById("modalImage").alt = p.name + " — " + img.label;
+
+    document.getElementById("modalSwatches").innerHTML = p.images.map((im, i) =>
+      `<button class="swatch${i === state.imageIndex ? " active" : ""}" data-i="${i}"
+        style="background-image:url('${im.src}')" aria-label="${im.label}"></button>`
+    ).join("");
+
+    document.getElementById("modalSizes").innerHTML = p.sizes.map(s =>
+      `<button class="size-chip${s === state.size ? " active" : ""}" data-size="${s}">${s}</button>`
+    ).join("");
+
+    updateWhatsapp();
+    renderRelated();
+  }
+
+  function updateWhatsapp(){
+    const p = currentProduct();
+    const variant = p.images[state.imageIndex].label;
+    let msg = `Hi Frank, I'm interested in the ${p.name} (${variant}) listed on Frank's Merchandise. Is it available`;
+    msg += state.size ? ` in size ${state.size}?` : "?";
+    document.getElementById("modalWhatsapp").href =
+      `https://wa.me/${seller.whatsapp}?text=${encodeURIComponent(msg)}`;
+  }
+
+  function renderRelated(){
+    const p = currentProduct();
+    const others = activeProducts().filter(x => x.id !== p.id);
+    const sameCat = others.filter(x => x.category === p.category);
+    const rest = others.filter(x => x.category !== p.category);
+    const list = sameCat.concat(rest).slice(0, 3);
+    document.getElementById("relatedGrid").innerHTML = list.map(r =>
+      `<button class="related-card" data-id="${r.id}">
+        <img src="${r.images[0].src}" alt="${r.name}" loading="lazy">
+        <span>${r.name}</span>
+      </button>`
+    ).join("");
+  }
+
+  async function shareProduct(){
+    const p = currentProduct();
+    const text = `Check out ${p.name} on ${seller.name} — ${formatPrice(p.price)}`;
+    try{
+      if(navigator.share){
+        await navigator.share({ title: seller.name, text, url: location.href });
+      } else {
+        await navigator.clipboard.writeText(text + " " + location.href);
+        alert("Link copied — paste it anywhere to share.");
+      }
+    } catch(e){ /* user cancelled share — no action needed */ }
+  }
+
+  function bindEvents(){
+    document.getElementById("catalogue").addEventListener("click", e => {
+      const card = e.target.closest(".card");
+      if(card) openModal(card.dataset.id);
+    });
+
+    document.getElementById("relatedGrid").addEventListener("click", e => {
+      const card = e.target.closest(".related-card");
+      if(card) openModal(card.dataset.id);
+    });
+
+    document.getElementById("modalSwatches").addEventListener("click", e => {
+      const sw = e.target.closest(".swatch");
+      if(sw){ state.imageIndex = Number(sw.dataset.i); renderModal(); }
+    });
+
+    document.getElementById("modalSizes").addEventListener("click", e => {
+      const chip = e.target.closest(".size-chip");
+      if(chip){
+        state.size = state.size === chip.dataset.size ? null : chip.dataset.size;
+        renderModal();
+      }
+    });
+
+    document.getElementById("modalShare").addEventListener("click", shareProduct);
+    document.getElementById("modalClose").addEventListener("click", closeModal);
+    document.getElementById("modalOverlay").addEventListener("click", e => {
+      if(e.target.id === "modalOverlay") closeModal();
+    });
+    document.addEventListener("keydown", e => {
+      if(e.key === "Escape") closeModal();
+    });
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
